@@ -26,7 +26,9 @@ function LoginForm() {
     setError(null);
     start(async () => {
       const supabase = createClient();
-      const origin = window.location.origin;
+      const origin =
+        process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+        window.location.origin;
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {

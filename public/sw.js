@@ -1,6 +1,7 @@
 // Chief of Staff — minimal service worker.
 // Strategy: network-first for pages, cache-first for static assets.
-const VERSION = "cos-v1";
+// Invariant: every respondWith() resolves to a real Response — never undefined.
+const VERSION = "cos-v2";
 const APP_SHELL = ["/", "/login", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
@@ -19,37 +20,56 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+function offlineFallback() {
+  return new Response(
+    "<!doctype html><meta charset=utf-8><title>Offline</title><p>Offline.",
+    { status: 503, headers: { "Content-Type": "text/html; charset=utf-8" } }
+  );
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
 
-  // Don't cache API calls or auth — always hit network
+  // Never intercept API or auth — always hit the network directly.
   if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/auth/")) return;
 
-  // Network-first for navigations; fall back to cache if offline
+  // Skip cross-origin; let the browser handle them natively.
+  if (url.origin !== self.location.origin) return;
+
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req)
-        .then((res) => {
+      (async () => {
+        try {
+          const res = await fetch(req);
           const copy = res.clone();
-          caches.open(VERSION).then((c) => c.put(req, copy));
+          caches.open(VERSION).then((c) => c.put(req, copy)).catch(() => {});
           return res;
-        })
-        .catch(() => caches.match(req).then((r) => r ?? caches.match("/")))
+        } catch {
+          const cached = (await caches.match(req)) || (await caches.match("/"));
+          return cached ?? offlineFallback();
+        }
+      })()
     );
     return;
   }
 
-  // Cache-first for everything else
   event.respondWith(
-    caches.match(req).then((cached) => cached ?? fetch(req).then((res) => {
-      if (res.ok && (url.origin === self.location.origin)) {
-        const copy = res.clone();
-        caches.open(VERSION).then((c) => c.put(req, copy));
+    (async () => {
+      const cached = await caches.match(req);
+      if (cached) return cached;
+      try {
+        const res = await fetch(req);
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(VERSION).then((c) => c.put(req, copy)).catch(() => {});
+        }
+        return res;
+      } catch {
+        return cached ?? Response.error();
       }
-      return res;
-    }).catch(() => cached))
+    })()
   );
 });
