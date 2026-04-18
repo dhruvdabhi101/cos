@@ -35,6 +35,20 @@ export async function proxy(request: NextRequest) {
     url.pathname === "/sw.js" ||
     url.pathname === "/favicon.ico";
 
+  // If a magic-link redirect lands on any non-callback route with a `code`
+  // (e.g. Supabase Site URL fallback), forward it to the callback route
+  // preserving the intended destination as `next`.
+  const code = url.searchParams.get("code");
+  if (code && !url.pathname.startsWith("/auth/callback")) {
+    const cbUrl = url.clone();
+    cbUrl.pathname = "/auth/callback";
+    cbUrl.searchParams.set(
+      "next",
+      url.pathname === "/login" ? url.searchParams.get("next") ?? "/" : url.pathname
+    );
+    return NextResponse.redirect(cbUrl);
+  }
+
   if (!user && !isAuthRoute && !isPublicAsset) {
     const loginUrl = url.clone();
     loginUrl.pathname = "/login";
