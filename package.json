@@ -9,8 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.53",
+    "@mastra/core": "^1.25.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.46.1",
+    "ai": "^6.0.168",
     "chrono-node": "^2.7.7",
     "dexie": "^4.0.10",
     "dexie-react-hooks": "^1.1.7",

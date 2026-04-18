@@ -11,6 +11,7 @@ export interface StreamHandlers {
   onToken: (text: string) => void;
   onDone: () => void;
   onError: (err: string) => void;
+  onToolCalls?: (calls: { name: string }[]) => void;
 }
 
 export async function streamChat(
@@ -18,10 +19,17 @@ export async function streamChat(
   handlers: StreamHandlers,
   signal?: AbortSignal
 ) {
+  // Send the user's local date + tz so the server can resolve "today" correctly.
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const now = new Date();
+  const clientDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+    now.getDate()
+  ).padStart(2, "0")}`;
+
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, clientDate, clientTz: tz }),
     signal,
   });
 
@@ -60,6 +68,7 @@ export async function streamChat(
         else if (name === "token") handlers.onToken(JSON.parse(data));
         else if (name === "done") handlers.onDone();
         else if (name === "error") handlers.onError(JSON.parse(data));
+        else if (name === "tool_calls") handlers.onToolCalls?.(JSON.parse(data));
       } catch (e) {
         console.error("[stream] parse error:", e, data);
       }
