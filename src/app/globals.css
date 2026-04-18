@@ -1,0 +1,138 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #F5F1E8;
+  --ink: #1A1814;
+  --rule: #E0D9C7;
+  --accent: #B4472C;
+  --muted: #6B6458;
+}
+
+.dark {
+  --paper: #141210;
+  --ink: #EDE6D3;
+  --rule: #2A2620;
+  --accent: #D97757;
+  --muted: #8A8275;
+}
+
+html, body {
+  background: var(--paper);
+  color: var(--ink);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle paper grain */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  z-index: 1;
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--ink) 1px, transparent 0);
+  background-size: 3px 3px;
+  mix-blend-mode: multiply;
+}
+
+.dark body::before {
+  opacity: 0.08;
+  mix-blend-mode: screen;
+}
+
+/* Typographic rules */
+.rule {
+  border-color: var(--rule);
+}
+
+.font-editorial {
+  font-family: "Instrument Serif", Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+/* Selection */
+::selection {
+  background: var(--accent);
+  color: var(--paper);
+}
+
+/* Input reset */
+.bare-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  color: inherit;
+  font: inherit;
+}
+
+.bare-input:focus {
+  outline: none;
+}
+
+/* Markdown prose */
+.prose-cos {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+.prose-cos > * + * { margin-top: 0.9em; }
+.prose-cos h1 { font-family: "Instrument Serif", Georgia, serif; font-size: 1.8em; letter-spacing: -0.02em; margin-top: 1.2em; }
+.prose-cos h2 { font-family: "Instrument Serif", Georgia, serif; font-size: 1.4em; font-style: italic; margin-top: 1em; }
+.prose-cos h3 { font-size: 1.1em; font-weight: 600; margin-top: 1em; }
+.prose-cos p { margin: 0.7em 0; }
+.prose-cos ul, .prose-cos ol { padding-left: 1.5em; }
+.prose-cos li { margin: 0.25em 0; }
+.prose-cos code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.88em;
+  background: var(--rule);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+.prose-cos pre {
+  background: var(--rule);
+  padding: 1em;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.88em;
+}
+.prose-cos pre code { background: transparent; padding: 0; }
+.prose-cos blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 1em;
+  font-style: italic;
+  color: var(--muted);
+}
+.prose-cos a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.prose-cos strong { font-weight: 600; }
+.prose-cos hr { border: none; border-top: 1px solid var(--rule); margin: 1.5em 0; }
+
+/* Citation pills */
+.prose-cos cite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin: 0 1px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1;
+  background: var(--accent);
+  color: var(--paper);
+  border-radius: 9px;
+  cursor: pointer;
+  vertical-align: baseline;
+  transition: transform 0.1s;
+}
+.prose-cos cite:hover { transform: scale(1.15); }
